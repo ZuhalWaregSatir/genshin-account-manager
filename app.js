@@ -44,6 +44,12 @@ const confirmModal = document.getElementById('confirm-modal');
 const btnCancelClear = document.getElementById('btn-cancel-clear');
 const btnConfirmClear = document.getElementById('btn-confirm-clear');
 
+// Mobile Sidebar Elements
+const sidebar = document.querySelector('.sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const btnSidebarToggle = document.getElementById('btn-sidebar-toggle');
+
+
 // Drawer Field Elements
 const drawerAccEmail = document.getElementById('drawer-acc-email');
 const stepOutlookEmail = document.getElementById('step-outlook-email');
@@ -822,6 +828,30 @@ function setupEventListeners() {
     // Drawer overlay & close button
     drawerOverlay.addEventListener('click', closeWorkflowDrawer);
     btnCloseDrawer.addEventListener('click', closeWorkflowDrawer);
+
+    // Mobile Sidebar actions
+    function openSidebar() {
+        if (sidebar && sidebarOverlay) {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        }
+    }
+    function closeSidebar() {
+        if (sidebar && sidebarOverlay) {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        }
+    }
+    if (btnSidebarToggle) btnSidebarToggle.addEventListener('click', openSidebar);
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // Auto-close sidebar on mobile when action is taken
+    [btnGenerateOne, btnGenerateBulk, btnExportJson, btnExportCsv, btnTriggerImport].forEach(b => {
+        if (b) b.addEventListener('click', () => {
+            if (window.innerWidth <= 1024) closeSidebar();
+        });
+    });
+
 
     // Step Complete actions
     btnCompleteStep1.addEventListener('click', () => {
