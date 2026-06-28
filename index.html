@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genshin Impact Account Manager & Reroll Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation & Controls -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+                        <line x1="12" y1="2" x2="12" y2="22"></line>
+                        <line x1="12" y1="12" x2="22" y2="8.5"></line>
+                        <line x1="12" y1="12" x2="2" y2="8.5"></line>
+                        <line x1="2" y1="8.5" x2="12" y2="15.5"></line>
+                        <line x1="22" y1="8.5" x2="12" y2="15.5"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Genshin Manager</h1>
+                    <span class="version">v1.0.0 • Reroll Helper</span>
+                </div>
+            </div>
+
+            <!-- Stats Widgets -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <span class="stat-label">Total Akun</span>
+                    <span class="stat-value" id="stat-total">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Terhubung X/Genshin</span>
+                    <span class="stat-value" id="stat-linked">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Primogem</span>
+                    <span class="stat-value text-gold" id="stat-primos">0</span>
+                </div>
+            </div>
+
+            <!-- Generator Controls Panel -->
+            <div class="sidebar-section">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Generator Akun Baru
+                </h2>
+                
+                <div class="form-group">
+                    <label for="username-length">Panjang Username (Outlook)</label>
+                    <div class="range-container">
+                        <input type="range" id="username-length" min="8" max="12" value="10" step="1">
+                        <span id="range-val" class="badge">10 Karakter</span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="switch-label" for="include-symbols">
+                        <span>Gunakan Simbol & Angka</span>
+                        <small>Tambahkan . _ atau angka di email</small>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="include-symbols" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="outlook-domain">Domain Email</label>
+                    <select id="outlook-domain" class="form-select">
+                        <option value="@outlook.com">@outlook.com</option>
+                        <option value="@hotmail.com">@hotmail.com</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password-length">Panjang Password (Outlook/X)</label>
+                    <div class="range-container">
+                        <input type="range" id="password-length" min="12" max="20" value="14" step="1">
+                        <span id="pass-range-val" class="badge">14 Karakter</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="btn-generate-one">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Generate Draft
+                    </button>
+                    <button class="btn btn-secondary" id="btn-generate-bulk">
+                        Generate 5 Drafts
+                    </button>
+                </div>
+            </div>
+
+            <!-- Backup & Export -->
+            <div class="sidebar-section backup-section">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Cadangkan & Kelola Data
+                </h2>
+                <div class="btn-group vertical">
+                    <button class="btn btn-outline" id="btn-export-json">
+                        Ekspor JSON (Cadangan Lengkap)
+                    </button>
+                    <button class="btn btn-outline" id="btn-export-csv">
+                        Ekspor CSV (Excel)
+                    </button>
+                    <button class="btn btn-outline" id="btn-trigger-import">
+                        Impor Data Backup
+                    </button>
+                    <input type="file" id="import-file" accept=".json,.csv" style="display: none;">
+                    <button class="btn btn-danger-link" id="btn-clear-db">Hapus Semua Data</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-title-container">
+                    <span class="pre-title">Genshin Impact Reroll Helper</span>
+                    <h2>Dashboard Akun & Reroll</h2>
+                </div>
+
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="search-input" placeholder="Cari email, username X, atau bintang 5...">
+                    </div>
+
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">Semua</button>
+                        <button class="filter-btn" data-filter="draft">Draft</button>
+                        <button class="filter-btn" data-filter="outlook">Outlook OK</button>
+                        <button class="filter-btn" data-filter="x">X OK</button>
+                        <button class="filter-btn" data-filter="genshin">Linked</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="table-container">
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>Email Outlook</th>
+                            <th>Password Email</th>
+                            <th>Akun X (Username:Pass)</th>
+                            <th>Status Proses</th>
+                            <th>AR</th>
+                            <th>Primogems</th>
+                            <th>Karakter *5 / Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="account-table-body">
+                        <!-- Data will be loaded via JS -->
+                        <tr class="empty-row">
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                                        <line x1="9" y1="19" x2="15" y2="19"></line>
+                                        <line x1="9" y1="11" x2="10" y2="11"></line>
+                                    </svg>
+                                    <p>Belum ada akun terdaftar.</p>
+                                    <span>Klik tombol "Generate Draft" di panel kiri untuk memulai sesi reroll kamu.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Workflow Drawer / Modal Side Panel -->
+    <div class="drawer" id="workflow-drawer">
+        <div class="drawer-overlay" id="drawer-overlay"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <div>
+                    <h3>Panduan Registrasi & Reroll</h3>
+                    <p class="drawer-sub">Ikuti langkah-langkah untuk menghubungkan akun</p>
+                </div>
+                <button class="btn-close" id="btn-close-drawer">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="drawer-body">
+                <!-- Selected Account Details Info -->
+                <div class="current-acc-card">
+                    <span class="card-tag">Akun Target</span>
+                    <div class="card-row">
+                        <span class="card-label">Email Draft:</span>
+                        <div class="copy-field">
+                            <span class="copy-text text-truncate" id="drawer-acc-email">email@outlook.com</span>
+                            <button class="btn-icon-small btn-copy" data-target="drawer-acc-email" title="Copy Email">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Outlook -->
+                <div class="step-card" id="step-outlook-card">
+                    <div class="step-card-header">
+                        <span class="step-number">1</span>
+                        <h4>Registrasi Akun Outlook</h4>
+                        <span class="badge badge-step" id="step1-status">Pending</span>
+                    </div>
+                    <div class="step-card-body">
+                        <p>Daftarkan email baru dengan data berikut di situs Microsoft.</p>
+                        
+                        <div class="field-item">
+                            <label>Email Outlook</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-outlook-email" readonly>
+                                <button class="btn btn-copy-action btn-copy" data-target="step-outlook-email">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label>Password Email</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-outlook-pass" readonly>
+                                <button class="btn btn-copy-action btn-copy" data-target="step-outlook-pass">Copy</button>
+                            </div>
+                        </div>
+
+                        <!-- First & Last Name Input Group -->
+                        <div class="field-item-row">
+                            <div class="field-item">
+                                <label>First Name</label>
+                                <div class="copy-input-group">
+                                    <input type="text" id="step-outlook-firstname" readonly>
+                                    <button class="btn btn-copy-action btn-copy" data-target="step-outlook-firstname">Copy</button>
+                                </div>
+                            </div>
+                            <div class="field-item">
+                                <label>Last Name</label>
+                                <div class="copy-input-group">
+                                    <input type="text" id="step-outlook-lastname" readonly>
+                                    <button class="btn btn-copy-action btn-copy" data-target="step-outlook-lastname">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date of Birth Input -->
+                        <div class="field-item">
+                            <label>Tanggal Lahir (Random, Min. 21 Tahun)</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-outlook-dob" readonly>
+                                <button class="btn btn-copy-action btn-copy" data-target="step-outlook-dob">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="step-actions">
+                            <a id="btn-outlook-signup" href="https://signup.live.com/signup?cobrandid=ab0455a0-8d03-46b9-b18b-df2f57b9e44c&contextid=2F1573481CB5BAF0&opid=BF2DF86E1896DD4D&bk=1782652896&sru=https://login.live.com/oauth20_authorize.srf%3fclient_id%3d9199bf20-a13f-4107-85dc-02114787ef48%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26client_id%3d9199bf20-a13f-4107-85dc-02114787ef48%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26contextid%3d2F1573481CB5BAF0%26opid%3dBF2DF86E1896DD4D%26login_hint%3dM%2524EjZ4nOM4uGzq7B0LHm5MEBIvzE-2zLEoqCi0NHDILy3Jyc_P1kvOz5W4fWvC6b__gYARAO0RFtE%26mkt%3dEN-US%26lc%3d1033%26bk%3d1782652896%26uaid%3df9ce5cdf48f8118072039ce42f0c8869&lw=dob,flname,wld&uiflavor=web&fluent=2&client_id=00000000487A244A&lic=1&mkt=EN-US&lc=1033&uaid=f9ce5cdf48f8118072039ce42f0c8869" target="_blank" class="btn btn-primary btn-sm flex-grow link-btn">
+                                Buka Outlook SignUp ↗
+                            </a>
+                            <button class="btn btn-success-action btn-sm" id="btn-complete-step1">
+                                Selesai Registrasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Twitter / X -->
+                <div class="step-card" id="step-x-card">
+                    <div class="step-card-header">
+                        <span class="step-number">2</span>
+                        <h4>Buat Akun X (Twitter)</h4>
+                        <span class="badge badge-step" id="step2-status">Pending</span>
+                    </div>
+                    <div class="step-card-body">
+                        <p>Daftarkan akun Twitter/X baru menggunakan email Outlook yang sudah dibuat di atas.</p>
+                        
+                        <div class="field-item">
+                            <label>Username / Email Terdaftar</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-x-email" readonly>
+                                <button class="btn btn-copy-action btn-copy" data-target="step-x-email">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label>Username X Pilihan (Opsional)</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-x-username" placeholder="Masukkan username X jika sudah dibuat">
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label>Password X</label>
+                            <div class="copy-input-group">
+                                <input type="text" id="step-x-pass" readonly>
+                                <button class="btn btn-copy-action btn-copy" data-target="step-x-pass">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="step-actions">
+                            <a href="https://x.com/i/flow/signup" target="_blank" class="btn btn-primary btn-sm flex-grow link-btn">
+                                Buka Twitter/X SignUp ↗
+                            </a>
+                            <button class="btn btn-success-action btn-sm" id="btn-complete-step2">
+                                Selesai Registrasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Genshin Connection -->
+                <div class="step-card" id="step-genshin-card">
+                    <div class="step-card-header">
+                        <span class="step-number">3</span>
+                        <h4>Hubungkan ke Genshin Impact</h4>
+                        <span class="badge badge-step" id="step3-status">Pending</span>
+                    </div>
+                    <div class="step-card-body">
+                        <p>Login ke game Genshin Impact atau situs Hoyoverse menggunakan opsi login Twitter/X yang baru dibuat.</p>
+                        
+                        <div class="info-alert">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-gold"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            <span>Tips: Lakukan gacha reroll hingga Primo habis, lalu catat hasilnya di bawah.</span>
+                        </div>
+
+                        <div class="step-actions">
+                            <a href="https://account.hoyoverse.com/" target="_blank" class="btn btn-primary btn-sm flex-grow link-btn">
+                                Buka Hoyoverse Portal ↗
+                            </a>
+                            <button class="btn btn-success-action btn-sm" id="btn-complete-step3">
+                                Sudah Terhubung
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Reroll Result Tracker -->
+                <div class="step-card" id="step-result-card">
+                    <div class="step-card-header">
+                        <span class="step-number">4</span>
+                        <h4>Catat Hasil Reroll / Gacha</h4>
+                        <span class="badge badge-step" id="step4-status">Pending</span>
+                    </div>
+                    <div class="step-card-body">
+                        <div class="field-item-row">
+                            <div class="field-item">
+                                <label for="step-ar">AR (Adventure Rank)</label>
+                                <input type="number" id="step-ar" min="1" max="60" value="5">
+                            </div>
+                            <div class="field-item">
+                                <label for="step-primos">Jumlah Primogem</label>
+                                <input type="number" id="step-primos-input" min="0" value="0" step="50">
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label for="step-characters">Karakter Bintang 5 Didapat / Catatan</label>
+                            <input type="text" id="step-characters" placeholder="Contoh: Diluc, Mona, Jean (atau skip jika ampas)">
+                        </div>
+
+                        <div class="step-actions">
+                            <button class="btn btn-gold btn-block" id="btn-save-workflow">
+                                Simpan Data Akun
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <span id="toast-message">Teks berhasil disalin!</span>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus Database -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h3>Konfirmasi Hapus Data</h3>
+            <p>Apakah Anda yakin ingin menghapus <strong>seluruh data akun</strong> yang tersimpan? Tindakan ini tidak dapat dibatalkan!</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-cancel-clear">Batal</button>
+                <button class="btn btn-danger" id="btn-confirm-clear">Ya, Hapus Semua</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
