@@ -1,6 +1,6 @@
 /**
  * Genshin Impact Account Manager & Reroll Assistant
- * Core Logic & State Management
+ * Core Logic & State Management (v1.2.0)
  */
 
 // --- State Management ---
@@ -49,7 +49,6 @@ const sidebar = document.querySelector('.sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 const btnSidebarToggle = document.getElementById('btn-sidebar-toggle');
 
-
 // Drawer Field Elements
 const drawerAccEmail = document.getElementById('drawer-acc-email');
 const stepOutlookEmail = document.getElementById('step-outlook-email');
@@ -57,16 +56,14 @@ const stepOutlookPass = document.getElementById('step-outlook-pass');
 const stepOutlookFirstName = document.getElementById('step-outlook-firstname');
 const stepOutlookLastName = document.getElementById('step-outlook-lastname');
 const stepOutlookDob = document.getElementById('step-outlook-dob');
-const stepXEmail = document.getElementById('step-x-email');
-const stepXUsername = document.getElementById('step-x-username');
-const stepXPass = document.getElementById('step-x-pass');
+const stepGenshinEmail = document.getElementById('step-genshin-email');
+const stepGenshinPass = document.getElementById('step-genshin-pass');
 const stepArInput = document.getElementById('step-ar');
 const stepPrimosInput = document.getElementById('step-primos-input');
 const stepCharacters = document.getElementById('step-characters');
 
 // Drawer Steps Cards
 const stepOutlookCard = document.getElementById('step-outlook-card');
-const stepXCard = document.getElementById('step-x-card');
 const stepGenshinCard = document.getElementById('step-genshin-card');
 const stepResultCard = document.getElementById('step-result-card');
 
@@ -74,12 +71,10 @@ const stepResultCard = document.getElementById('step-result-card');
 const badgeStep1 = document.getElementById('step1-status');
 const badgeStep2 = document.getElementById('step2-status');
 const badgeStep3 = document.getElementById('step3-status');
-const badgeStep4 = document.getElementById('step4-status');
 
 // Drawer Action Buttons
 const btnCompleteStep1 = document.getElementById('btn-complete-step1');
 const btnCompleteStep2 = document.getElementById('btn-complete-step2');
-const btnCompleteStep3 = document.getElementById('btn-complete-step3');
 const btnSaveWorkflow = document.getElementById('btn-save-workflow');
 
 // Toast Notification
@@ -154,40 +149,12 @@ function generateRandomDOB() {
     
     const day = Math.floor(Math.random() * 28) + 1;
     const month = months[Math.floor(Math.random() * months.length)];
-    const year = Math.floor(Math.random() * 20) + 1986; // 1986-2005 (At least 21 years old as of 2026)
+    const year = Math.floor(Math.random() * 20) + 1986; // 1986-2005
     
     return `${day} ${month} ${year}`;
 }
 
-// Generate Readable X Username (Adjective + Noun + Number)
-function generateReadableXUsername() {
-    const adjectives = [
-        'Swift', 'Frost', 'Blaze', 'Storm', 'Dark', 'Light', 'Star', 'Luna', 
-        'Void', 'Wild', 'Iron', 'Neon', 'Ghost', 'Epic', 'Nova', 'Zesty', 
-        'Crimson', 'Azure', 'Golden', 'Silver', 'Shadow', 'Silent', 'Hyper', 'Apex'
-    ];
-    const nouns = [
-        'Gamer', 'Knight', 'Archon', 'Hunter', 'Slime', 'Rex', 'Bard', 'Wolf', 
-        'Blade', 'Shield', 'Soul', 'Fang', 'Claw', 'Crown', 'Rider', 'Sage', 
-        'Monk', 'Beast', 'Nova', 'Slayer', 'Seeker', 'Ghost', 'King', 'Hero'
-    ];
-    
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    
-    // Combine and limit length to 15 chars max (Twitter/X limit)
-    let base = adj + noun;
-    const number = Math.floor(Math.random() * 90) + 10; // 10-99
-    
-    let username = base + number;
-    if (username.length > 15) {
-        username = username.slice(0, 15);
-    }
-    return username;
-}
-
 // Generate Random Email Username (Outlook Rules)
-// Must start with letter, end with letter/number, symbols cannot be consecutive.
 function generateEmailUsername(length, includeSymbols) {
     const letters = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
@@ -290,8 +257,7 @@ function createAccountDraft() {
     const username = generateEmailUsername(userLength, includeSym);
     const email = username + domain;
     const emailPassword = generateSecurePassword(passLength);
-    const xPassword = generateSecurePassword(passLength);
-    const xUsername = generateReadableXUsername();
+    const gamePassword = generateSecurePassword(passLength);
     
     // Generate Name & DOB details
     const { firstName, lastName } = generateRandomName();
@@ -301,12 +267,11 @@ function createAccountDraft() {
         id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         email: email,
         emailPassword: emailPassword,
-        xUsername: xUsername,
-        xPassword: xPassword,
+        gamePassword: gamePassword,
         firstName: firstName,
         lastName: lastName,
         dob: dob,
-        status: 'draft', // draft -> outlook -> x -> genshin
+        status: 'draft', // draft -> outlook -> genshin
         ar: 5,
         primos: 0,
         characters: '',
@@ -340,8 +305,10 @@ function renderAccountsTable() {
     // Search query
     if (query) {
         filtered = filtered.filter(acc => {
+            const gamePass = acc.gamePassword || '';
             return acc.email.toLowerCase().includes(query) || 
-                   acc.xUsername.toLowerCase().includes(query) || 
+                   acc.emailPassword.toLowerCase().includes(query) ||
+                   gamePass.toLowerCase().includes(query) ||
                    acc.characters.toLowerCase().includes(query);
         });
     }
@@ -370,17 +337,8 @@ function renderAccountsTable() {
     filtered.forEach(acc => {
         const tr = document.createElement('tr');
         
-        // Status Badge details
-        let badgeHtml = '';
-        if (acc.status === 'draft') {
-            badgeHtml = '<span class="badge-status draft">Draft</span>';
-        } else if (acc.status === 'outlook') {
-            badgeHtml = '<span class="badge-status outlook">Outlook OK</span>';
-        } else if (acc.status === 'x') {
-            badgeHtml = '<span class="badge-status x">X Registered</span>';
-        } else if (acc.status === 'genshin') {
-            badgeHtml = '<span class="badge-status genshin">Genshin Linked</span>';
-        }
+        // Fallback for game password if legacy account
+        const gamePass = acc.gamePassword || acc.emailPassword || 'GenshinPass123!';
 
         // Highlight character if contains 5-star character
         const hasFiveStar = acc.characters && acc.characters.trim().length > 0;
@@ -399,27 +357,37 @@ function renderAccountsTable() {
             <td>
                 <div class="credential-cell">
                     <span class="credential-value" id="pass-${acc.id}">${acc.emailPassword}</span>
-                    <button class="btn-icon-small btn-copy" data-target="pass-${acc.id}" title="Copy Password">
+                    <button class="btn-icon-small btn-copy" data-target="pass-${acc.id}" title="Copy Password Email">
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                     </button>
                 </div>
             </td>
             <td>
                 <div class="credential-cell">
-                    <span class="credential-value" id="x-${acc.id}">${acc.xUsername}:${acc.xPassword}</span>
-                    <button class="btn-icon-small btn-copy" data-target="x-${acc.id}" title="Copy X Credentials">
+                    <span class="credential-value" id="gamepass-${acc.id}">${gamePass}</span>
+                    <button class="btn-icon-small btn-copy" data-target="gamepass-${acc.id}" title="Copy Password Game">
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                     </button>
                 </div>
             </td>
-            <td>${badgeHtml}</td>
+            <td>
+                <select class="status-select-badge ${acc.status}" data-id="${acc.id}">
+                    <option value="draft" ${acc.status === 'draft' ? 'selected' : ''}>Draft</option>
+                    <option value="outlook" ${acc.status === 'outlook' ? 'selected' : ''}>Outlook OK</option>
+                    <option value="genshin" ${acc.status === 'genshin' ? 'selected' : ''}>Genshin Linked</option>
+                </select>
+            </td>
             <td class="text-ar">AR ${acc.ar}</td>
             <td class="text-primos">${parseInt(acc.primos || 0).toLocaleString('id-ID')}</td>
             <td class="${charCellClass}" title="${acc.characters}">${charCellVal}</td>
             <td>
                 <div class="table-actions">
-                    <button class="btn btn-primary btn-sm btn-workflow" data-id="${acc.id}">
-                        Proses Reroll
+                    <button class="btn-copy-all" data-id="${acc.id}" title="Copy format: Email | PassEmail | PassGame">
+                        <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copy All
+                    </button>
+                    <button class="btn btn-primary btn-sm btn-workflow" data-id="${acc.id}" title="Buka Workflow Drawer">
+                        Detail
                     </button>
                     <button class="btn btn-secondary btn-sm btn-delete-row" data-id="${acc.id}" title="Hapus">
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -433,6 +401,16 @@ function renderAccountsTable() {
     // Reattach Copy Button Handlers
     document.querySelectorAll('.btn-copy').forEach(btn => {
         btn.addEventListener('click', handleCopyAction);
+    });
+
+    // Reattach Copy All Button Handlers
+    document.querySelectorAll('.btn-copy-all').forEach(btn => {
+        btn.addEventListener('click', handleCopyAllAction);
+    });
+
+    // Reattach Fast Status Switcher Handlers
+    document.querySelectorAll('.status-select-badge').forEach(select => {
+        select.addEventListener('change', handleFastStatusChange);
     });
 
     // Reattach Delete Row Button Handlers
@@ -454,7 +432,7 @@ function renderAccountsTable() {
     });
 }
 
-// Copy Action Logic
+// Copy Action Logic for Single Field
 function handleCopyAction(e) {
     const targetId = e.currentTarget.getAttribute('data-target');
     let copyText = '';
@@ -471,7 +449,6 @@ function handleCopyAction(e) {
     navigator.clipboard.writeText(copyText).then(() => {
         showToast('Berhasil disalin ke clipboard!');
         
-        // Add a temporary visual glow effect to copy button
         const originalHtml = e.currentTarget.innerHTML;
         e.currentTarget.innerHTML = `
             <svg viewBox="0 0 24 24" width="14" height="14" stroke="#42b883" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -487,6 +464,59 @@ function handleCopyAction(e) {
     });
 }
 
+// Copy All Credentials Logic (Email | EmailPass | GamePass)
+function handleCopyAllAction(e) {
+    const id = e.currentTarget.getAttribute('data-id');
+    const acc = accounts.find(a => a.id === id);
+    if (!acc) return;
+
+    const gamePass = acc.gamePassword || acc.emailPassword || 'GenshinPass123!';
+    const formatted = `${acc.email} | ${acc.emailPassword} | ${gamePass}`;
+
+    navigator.clipboard.writeText(formatted).then(() => {
+        showToast('Semua kredensial disalin! (Email | PassEmail | PassGame)');
+        
+        const btn = e.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="13" height="13" stroke="#42b883" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Done!
+        `;
+        btn.style.borderColor = '#42b883';
+        btn.style.color = '#42b883';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 1200);
+    }).catch(err => {
+        console.error('Copy all failed', err);
+    });
+}
+
+// Fast Status Change Handler
+function handleFastStatusChange(e) {
+    const select = e.target;
+    const id = select.getAttribute('data-id');
+    const newStatus = select.value;
+
+    const accIdx = accounts.findIndex(a => a.id === id);
+    if (accIdx !== -1) {
+        accounts[accIdx].status = newStatus;
+        saveToLocalStorage();
+        
+        // Update class styling of select badge
+        select.className = `status-select-badge ${newStatus}`;
+        
+        let label = 'Draft';
+        if (newStatus === 'outlook') label = 'Outlook OK';
+        if (newStatus === 'genshin') label = 'Genshin Linked';
+        
+        showToast(`Status diperbarui ke: ${label}`);
+    }
+}
+
 // --- Workflow Drawer Handlers ---
 
 function openWorkflowDrawer(id) {
@@ -495,7 +525,7 @@ function openWorkflowDrawer(id) {
 
     currentEditingAccountId = id;
 
-    // Fallback generation for older/imported accounts without names
+    // Fallback generation for legacy data
     if (!acc.firstName || !acc.lastName) {
         const { firstName, lastName } = generateRandomName();
         acc.firstName = firstName;
@@ -506,10 +536,14 @@ function openWorkflowDrawer(id) {
         acc.dob = generateRandomDOB();
         saveToLocalStorage();
     }
+    if (!acc.gamePassword) {
+        acc.gamePassword = generateSecurePassword(14);
+        saveToLocalStorage();
+    }
 
     // Fill inputs
     drawerAccEmail.textContent = acc.email;
-    stepOutlookEmail.value = acc.email.split('@')[0]; // Only copy the prefix/username (without domain)
+    stepOutlookEmail.value = acc.email.split('@')[0]; // Username prefix
     stepOutlookPass.value = acc.emailPassword;
     
     // Set Name & DOB inputs
@@ -517,20 +551,19 @@ function openWorkflowDrawer(id) {
     stepOutlookLastName.value = acc.lastName;
     stepOutlookDob.value = acc.dob;
     
-    // Update Outlook SignUp Link with hash values for AutoFill userscript
-    const outlookBaseUrl = "https://signup.live.com/signup?cobrandid=ab0455a0-8d03-46b9-b18b-df2f57b9e44c&contextid=2F1573481CB5BAF0&opid=BF2DF86E1896DD4D&bk=1782652896&sru=https://login.live.com/oauth20_authorize.srf%3fclient_id%3d9199bf20-a13f-4107-85dc-02114787ef48%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26client_id%3d9199bf20-a13f-4107-85dc-02114787ef48%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26contextid%3d2F1573481CB5BAF0%26opid%3dBF2DF86E1896DD4D%26login_hint%3dM%2524EjZ4nOM4uGzq7B0LHm5MEBIvzE-2zLEoqCi0NHDILy3Jyc_P1kvOz5W4fWvC6b__gYARAO0RFtE%26mkt%3dEN-US%26lc%3d1033%26bk%3d1782652896%26uaid%3df9ce5cdf48f8118072039ce42f0c8869&lw=dob,flname,wld&uiflavor=web&fluent=2&client_id=00000000487A244A&lic=1&mkt=EN-US&lc=1033&uaid=f9ce5cdf48f8118072039ce42f0c8869";
+    // Update Outlook SignUp Link
+    const outlookBaseUrl = "https://signup.live.com/";
     const prefix = acc.email.split('@')[0];
     const pass = encodeURIComponent(acc.emailPassword);
     const first = encodeURIComponent(acc.firstName);
     const last = encodeURIComponent(acc.lastName);
     
-    // Parse Date of Birth into Day, Month, Year
+    // Parse DOB
     const dobParts = acc.dob.split(' ');
     const dobDay = dobParts[0] || '1';
     const dobMonthStr = dobParts[1] || 'Januari';
     const dobYear = dobParts[2] || '1995';
     
-    // Convert Indonesian Month name to English/Number index (0-11) for Outlook select dropdown
     const monthsMap = {
         'Januari': '0', 'Februari': '1', 'Maret': '2', 'April': '3', 'Mei': '4', 'Juni': '5',
         'Juli': '6', 'Agustus': '7', 'September': '8', 'Oktober': '9', 'November': '10', 'Desember': '11'
@@ -539,10 +572,11 @@ function openWorkflowDrawer(id) {
     
     btnOutlookSignup.href = `${outlookBaseUrl}#prefix=${prefix}&pass=${pass}&first=${first}&last=${last}&dobDay=${dobDay}&dobMonth=${dobMonth}&dobYear=${dobYear}`;
     
-    stepXEmail.value = acc.email;
-    stepXUsername.value = acc.xUsername || '';
-    stepXPass.value = acc.xPassword;
+    // Step 2 (Genshin) fields
+    stepGenshinEmail.value = acc.email;
+    stepGenshinPass.value = acc.gamePassword;
 
+    // Step 3 (Results) fields
     stepArInput.value = acc.ar || 5;
     stepPrimosInput.value = acc.primos || 0;
     stepCharacters.value = acc.characters || '';
@@ -559,11 +593,10 @@ function closeWorkflowDrawer() {
 
 // Set visual progress markers based on status
 function updateWorkflowUI(status) {
-    // Reset classes
-    const cards = [stepOutlookCard, stepXCard, stepGenshinCard, stepResultCard];
+    const cards = [stepOutlookCard, stepGenshinCard, stepResultCard];
     cards.forEach(card => card.classList.remove('active'));
     
-    const badges = [badgeStep1, badgeStep2, badgeStep3, badgeStep4];
+    const badges = [badgeStep1, badgeStep2, badgeStep3];
     badges.forEach(b => {
         b.textContent = 'Pending';
         b.className = 'badge badge-step';
@@ -577,29 +610,18 @@ function updateWorkflowUI(status) {
         badgeStep1.textContent = 'Completed';
         badgeStep1.classList.add('badge-status', 'genshin');
         
-        stepXCard.classList.add('active');
+        stepGenshinCard.classList.add('active');
         badgeStep2.textContent = 'In Progress';
         badgeStep2.classList.add('badge-status', 'outlook');
-    } else if (status === 'x') {
-        badgeStep1.textContent = 'Completed';
-        badgeStep1.classList.add('badge-status', 'genshin');
-        badgeStep2.textContent = 'Completed';
-        badgeStep2.classList.add('badge-status', 'genshin');
-
-        stepGenshinCard.classList.add('active');
-        badgeStep3.textContent = 'In Progress';
-        badgeStep3.classList.add('badge-status', 'outlook');
     } else if (status === 'genshin') {
         badgeStep1.textContent = 'Completed';
         badgeStep1.classList.add('badge-status', 'genshin');
         badgeStep2.textContent = 'Completed';
         badgeStep2.classList.add('badge-status', 'genshin');
-        badgeStep3.textContent = 'Completed';
-        badgeStep3.classList.add('badge-status', 'genshin');
 
         stepResultCard.classList.add('active');
-        badgeStep4.textContent = 'Active';
-        badgeStep4.classList.add('badge-status', 'genshin');
+        badgeStep3.textContent = 'Active';
+        badgeStep3.classList.add('badge-status', 'genshin');
     }
 }
 
@@ -611,14 +633,6 @@ function updateAccountStatus(newStatus) {
 
     accounts[accIdx].status = newStatus;
     
-    // Save X Username value if updated in Step 2
-    if (newStatus === 'x' || newStatus === 'genshin') {
-        const xUserVal = stepXUsername.value.trim();
-        if (xUserVal) {
-            accounts[accIdx].xUsername = xUserVal;
-        }
-    }
-
     saveToLocalStorage();
     renderAccountsTable();
     updateWorkflowUI(newStatus);
@@ -652,21 +666,19 @@ function exportCSV() {
     
     let csvContent = "data:text/csv;charset=utf-8,";
     // Header
-    csvContent += "Email Outlook,Password Outlook,X Username,X Password,Status,AR,Primogems,Karakter Bintang 5 / Catatan,Tanggal Dibuat\n";
+    csvContent += "Email Outlook,Password Email,Password Game,Status,AR,Primogems,Karakter Bintang 5 / Catatan,Tanggal Dibuat\n";
     
     accounts.forEach(acc => {
-        // Escape quotes
         const email = `"${acc.email.replace(/"/g, '""')}"`;
         const emailPass = `"${acc.emailPassword.replace(/"/g, '""')}"`;
-        const xUser = `"${(acc.xUsername || '').replace(/"/g, '""')}"`;
-        const xPass = `"${acc.xPassword.replace(/"/g, '""')}"`;
+        const gamePass = `"${(acc.gamePassword || acc.emailPassword).replace(/"/g, '""')}"`;
         const status = `"${acc.status}"`;
         const ar = `"${acc.ar}"`;
         const primos = `"${acc.primos}"`;
         const notes = `"${(acc.characters || '').replace(/"/g, '""')}"`;
         const date = `"${acc.createdAt}"`;
         
-        csvContent += `${email},${emailPass},${xUser},${xPass},${status},${ar},${primos},${notes},${date}\n`;
+        csvContent += `${email},${emailPass},${gamePass},${status},${ar},${primos},${notes},${date}\n`;
     });
     
     const encodedUri = encodeURI(csvContent);
@@ -691,14 +703,13 @@ function handleImportFile(e) {
             if (file.name.endsWith('.json')) {
                 const parsed = JSON.parse(content);
                 if (Array.isArray(parsed)) {
-                    // Simple validation: must have email and emailPassword
                     const valid = parsed.every(item => item.email && item.emailPassword);
                     if (!valid) {
                         alert('Format file JSON tidak valid!');
                         return;
                     }
-                    accounts = parsed.concat(accounts); // Prepends imported data
-                    // De-duplicate by id or email
+                    accounts = parsed.concat(accounts);
+                    // De-duplicate by email
                     const seen = new Set();
                     accounts = accounts.filter(acc => {
                         const duplicate = seen.has(acc.email);
@@ -713,7 +724,6 @@ function handleImportFile(e) {
                     alert('Format file JSON harus berupa array akun.');
                 }
             } else if (file.name.endsWith('.csv')) {
-                // Parse simple CSV
                 const lines = content.split('\n');
                 if (lines.length <= 1) return;
                 
@@ -722,18 +732,16 @@ function handleImportFile(e) {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
-                    // Simple CSV split (handling commas inside quotes)
                     const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
                     if (matches && matches.length >= 2) {
                         const cleanVal = (val) => val ? val.replace(/^"|"$/g, '').trim() : '';
                         const email = cleanVal(matches[0]);
                         const emailPass = cleanVal(matches[1]);
-                        const xUser = cleanVal(matches[2]) || email.split('@')[0];
-                        const xPass = cleanVal(matches[3]) || emailPass;
-                        const status = cleanVal(matches[4]) || 'draft';
-                        const ar = parseInt(cleanVal(matches[5])) || 5;
-                        const primos = parseInt(cleanVal(matches[6])) || 0;
-                        const notes = cleanVal(matches[7]) || '';
+                        const gamePass = cleanVal(matches[2]) || emailPass;
+                        const status = cleanVal(matches[3]) || 'draft';
+                        const ar = parseInt(cleanVal(matches[4])) || 5;
+                        const primos = parseInt(cleanVal(matches[5])) || 0;
+                        const notes = cleanVal(matches[6]) || '';
                         
                         // Check duplicate
                         if (!accounts.some(a => a.email === email)) {
@@ -741,8 +749,7 @@ function handleImportFile(e) {
                                 id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
                                 email: email,
                                 emailPassword: emailPass,
-                                xUsername: xUser,
-                                xPassword: xPass,
+                                gamePassword: gamePass,
                                 status: status,
                                 ar: ar,
                                 primos: primos,
@@ -765,7 +772,6 @@ function handleImportFile(e) {
             console.error(err);
             alert('Gagal membaca file backup. Pastikan format file benar.');
         }
-        // Reset file input
         importFileInput.value = '';
     };
     reader.readAsText(file);
@@ -852,21 +858,16 @@ function setupEventListeners() {
         });
     });
 
-
     // Step Complete actions
     btnCompleteStep1.addEventListener('click', () => {
         updateAccountStatus('outlook');
     });
 
     btnCompleteStep2.addEventListener('click', () => {
-        updateAccountStatus('x');
-    });
-
-    btnCompleteStep3.addEventListener('click', () => {
         updateAccountStatus('genshin');
     });
 
-    // Save final stats (Step 4)
+    // Save final stats (Step 3)
     btnSaveWorkflow.addEventListener('click', () => {
         if (!currentEditingAccountId) return;
         const accIdx = accounts.findIndex(a => a.id === currentEditingAccountId);
@@ -876,7 +877,6 @@ function setupEventListeners() {
         accounts[accIdx].primos = parseInt(stepPrimosInput.value) || 0;
         accounts[accIdx].characters = stepCharacters.value.trim();
 
-        // Ensure status marks as linked (genshin) if saving results
         if (accounts[accIdx].status !== 'genshin') {
             accounts[accIdx].status = 'genshin';
         }
@@ -884,7 +884,7 @@ function setupEventListeners() {
         saveToLocalStorage();
         renderAccountsTable();
         closeWorkflowDrawer();
-        showToast('Hasil gacha & data akun berhasil disimpan!');
+        showToast('Hasil tabungan & data akun berhasil disimpan!');
     });
 
     // Import / Export listeners
