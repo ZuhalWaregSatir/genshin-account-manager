@@ -212,6 +212,23 @@ label {
     color: var(--text-muted);
 }
 
+.form-input {
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+.form-input:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 5px rgba(219, 175, 99, 0.3);
+}
+
 /* Inputs & Range Sliders */
 .range-container {
     display: flex;
@@ -1113,6 +1130,31 @@ input:checked + .slider:before {
 }
 .btn-gold:hover {
     box-shadow: 0 0 15px rgba(219, 175, 99, 0.4);
+}
+
+/* Modal Form Styles */
+.modal-form {
+    max-width: 480px;
+    gap: 18px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.modal-header h3 {
+    color: var(--gold-primary);
+    font-size: 1.15rem;
+}
+
+#manual-account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 /* ==========================================================================
