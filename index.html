@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <h1>Genshin Manager</h1>
-                    <span class="version">v1.2.0 • Fast Helper</span>
+                    <span class="version">v1.3.0 • Fast Helper</span>
                 </div>
             </div>
 
@@ -46,11 +46,11 @@
                 </div>
             </div>
 
-            <!-- Generator Controls Panel -->
+            <!-- Generator & Input Controls Panel -->
             <div class="sidebar-section">
                 <h2 class="section-title">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    Generator Akun Baru
+                    Generator & Input Akun
                 </h2>
                 
                 <div class="form-group">
@@ -88,13 +88,19 @@
                     </div>
                 </div>
 
-                <div class="btn-group">
-                    <button class="btn btn-primary" id="btn-generate-one">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        Generate Draft
-                    </button>
-                    <button class="btn btn-secondary" id="btn-generate-bulk">
-                        Generate 5 Drafts
+                <div class="btn-group vertical">
+                    <div class="btn-group">
+                        <button class="btn btn-primary flex-grow" id="btn-generate-one">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Generate Draft
+                        </button>
+                        <button class="btn btn-secondary" id="btn-generate-bulk">
+                            +5 Drafts
+                        </button>
+                    </div>
+                    <button class="btn btn-outline btn-block" id="btn-open-manual-modal">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Tambah Akun Manual
                     </button>
                 </div>
             </div>
@@ -177,7 +183,7 @@
                                         <line x1="9" y1="11" x2="10" y2="11"></line>
                                     </svg>
                                     <p>Belum ada akun terdaftar.</p>
-                                    <span>Klik tombol "Generate Draft" di panel kiri untuk memulai sesi kamu.</span>
+                                    <span>Klik "Generate Draft" atau "Tambah Akun Manual" untuk menambahkan akun.</span>
                                 </div>
                             </td>
                         </tr>
@@ -355,6 +361,64 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Akun Manual -->
+    <div class="modal" id="manual-modal">
+        <div class="modal-overlay" id="manual-modal-overlay"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>Tambah Akun Manual</h3>
+                <button class="btn-close" id="btn-close-manual-modal">&times;</button>
+            </div>
+            <form id="manual-account-form">
+                <div class="form-group">
+                    <label for="manual-email">Email Outlook *</label>
+                    <input type="email" id="manual-email" required placeholder="contoh@outlook.com" class="form-input">
+                </div>
+                
+                <div class="field-item-row">
+                    <div class="form-group">
+                        <label for="manual-email-pass">Password Email *</label>
+                        <input type="text" id="manual-email-pass" required placeholder="Pass Outlook" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-game-pass">Password Game *</label>
+                        <input type="text" id="manual-game-pass" required placeholder="Pass Genshin" class="form-input">
+                    </div>
+                </div>
+
+                <div class="field-item-row">
+                    <div class="form-group">
+                        <label for="manual-ar">AR (Adventure Rank)</label>
+                        <input type="number" id="manual-ar" min="1" max="60" value="5" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-primos">Primogems</label>
+                        <input type="number" id="manual-primos" min="0" value="0" step="50" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-status">Status Akun</label>
+                    <select id="manual-status" class="form-select">
+                        <option value="draft">Draft</option>
+                        <option value="outlook">Outlook OK</option>
+                        <option value="genshin" selected>Genshin Linked</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="manual-notes">Karakter Bintang 5 / Catatan</label>
+                    <input type="text" id="manual-notes" placeholder="Contoh: Raiden, Furina, dll." class="form-input">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-manual">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Akun</button>
+                </div>
+            </form>
         </div>
     </div>
 
