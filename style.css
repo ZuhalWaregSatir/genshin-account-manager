@@ -20,7 +20,6 @@
     /* Status Colors */
     --color-draft: #8b949e;
     --color-outlook: #17a2b8;
-    --color-x: #7c4dff;
     --color-genshin: #42b883;
     --color-danger: #ff4d4f;
     --color-danger-hover: #ff7875;
@@ -379,6 +378,27 @@ input:checked + .slider:before {
     background: rgba(219, 175, 99, 0.05);
 }
 
+.btn-copy-all {
+    background: rgba(219, 175, 99, 0.1);
+    border: 1px solid rgba(219, 175, 99, 0.3);
+    color: var(--gold-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-copy-all:hover {
+    background: var(--gold-primary);
+    color: var(--bg-main);
+    box-shadow: 0 0 10px rgba(219, 175, 99, 0.3);
+}
+
 .btn-danger {
     background: var(--color-danger);
     color: var(--text-main);
@@ -499,7 +519,6 @@ input:checked + .slider:before {
     font-size: 1.75rem;
     color: var(--text-main);
 }
-
 
 .search-filter-bar {
     display: flex;
@@ -651,7 +670,46 @@ input:checked + .slider:before {
     background: rgba(219, 175, 99, 0.1);
 }
 
-/* Status Badges */
+/* Status Select Badge Dropdown */
+.status-select-badge {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    border: 1px solid transparent;
+    transition: var(--transition-fast);
+}
+
+.status-select-badge.draft {
+    background: rgba(139, 148, 158, 0.15);
+    color: var(--text-secondary);
+    border-color: rgba(139, 148, 158, 0.3);
+}
+
+.status-select-badge.outlook {
+    background: rgba(23, 162, 184, 0.15);
+    color: var(--color-outlook);
+    border-color: rgba(23, 162, 184, 0.3);
+}
+
+.status-select-badge.genshin {
+    background: rgba(66, 184, 131, 0.15);
+    color: var(--color-genshin);
+    border-color: rgba(66, 184, 131, 0.3);
+}
+
+.status-select-badge option {
+    background: #0d1117;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Status Badges in Drawer */
 .badge-status {
     display: inline-flex;
     align-items: center;
@@ -680,12 +738,6 @@ input:checked + .slider:before {
     color: var(--color-outlook);
 }
 .badge-status.outlook::before { background: var(--color-outlook); }
-
-.badge-status.x {
-    background: rgba(124, 77, 255, 0.15);
-    color: #b388ff;
-}
-.badge-status.x::before { background: var(--color-x); }
 
 .badge-status.genshin {
     background: rgba(66, 184, 131, 0.15);
@@ -720,6 +772,7 @@ input:checked + .slider:before {
 /* Action Table Buttons */
 .table-actions {
     display: flex;
+    align-items: center;
     gap: 6px;
 }
 
@@ -972,6 +1025,7 @@ input:checked + .slider:before {
 .step-card-body p {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    margin-bottom: 12px;
 }
 
 /* Step Fields Inputs */
@@ -979,6 +1033,7 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    margin-bottom: 12px;
 }
 
 .field-item-row {
@@ -1028,7 +1083,7 @@ input:checked + .slider:before {
 .step-actions {
     display: flex;
     gap: 10px;
-    margin-top: 4px;
+    margin-top: 14px;
 }
 
 .link-btn {
@@ -1228,7 +1283,6 @@ input:checked + .slider:before {
         flex-shrink: 0;
     }
     
-    /* Crucial: Allow table to scroll horizontally on small screens */
     .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -1244,7 +1298,6 @@ input:checked + .slider:before {
         max-width: 120px;
     }
     
-    /* Make drawer take full screen on mobile */
     .drawer-content {
         width: 100%;
     }
@@ -1284,5 +1337,3 @@ input:checked + .slider:before {
         grid-template-columns: 1fr;
     }
 }
-
-
