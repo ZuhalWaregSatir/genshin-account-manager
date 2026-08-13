@@ -1,6 +1,6 @@
 /**
  * Genshin Impact Account Manager & Reroll Assistant
- * Core Logic & State Management (v1.2.0)
+ * Core Logic & State Management (v1.3.0)
  */
 
 // --- State Management ---
@@ -30,6 +30,14 @@ const btnExportCsv = document.getElementById('btn-export-csv');
 const btnTriggerImport = document.getElementById('btn-trigger-import');
 const importFileInput = document.getElementById('import-file');
 const btnClearDb = document.getElementById('btn-clear-db');
+
+// Manual Account Modal Elements
+const btnOpenManualModal = document.getElementById('btn-open-manual-modal');
+const manualModal = document.getElementById('manual-modal');
+const manualModalOverlay = document.getElementById('manual-modal-overlay');
+const btnCloseManualModal = document.getElementById('btn-close-manual-modal');
+const btnCancelManual = document.getElementById('btn-cancel-manual');
+const manualAccountForm = document.getElementById('manual-account-form');
 
 // Stats
 const statTotal = document.getElementById('stat-total');
@@ -506,7 +514,6 @@ function handleFastStatusChange(e) {
         accounts[accIdx].status = newStatus;
         saveToLocalStorage();
         
-        // Update class styling of select badge
         select.className = `status-select-badge ${newStatus}`;
         
         let label = 'Draft';
@@ -517,6 +524,62 @@ function handleFastStatusChange(e) {
     }
 }
 
+// --- Manual Account Modal Handlers ---
+
+function openManualModal() {
+    if (manualModal) {
+        manualModal.classList.add('active');
+    }
+}
+
+function closeManualModal() {
+    if (manualModal) {
+        manualModal.classList.remove('active');
+        manualAccountForm.reset();
+    }
+}
+
+function handleManualFormSubmit(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('manual-email').value.trim();
+    const emailPassword = document.getElementById('manual-email-pass').value.trim();
+    const gamePassword = document.getElementById('manual-game-pass').value.trim();
+    const ar = parseInt(document.getElementById('manual-ar').value) || 5;
+    const primos = parseInt(document.getElementById('manual-primos').value) || 0;
+    const status = document.getElementById('manual-status').value || 'genshin';
+    const notes = document.getElementById('manual-notes').value.trim();
+
+    if (!email || !emailPassword) {
+        alert('Email dan Password Email wajib diisi!');
+        return;
+    }
+
+    const { firstName, lastName } = generateRandomName();
+    const dob = generateRandomDOB();
+
+    const newAccount = {
+        id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        email: email,
+        emailPassword: emailPassword,
+        gamePassword: gamePassword || emailPassword,
+        firstName: firstName,
+        lastName: lastName,
+        dob: dob,
+        status: status,
+        ar: ar,
+        primos: primos,
+        characters: notes,
+        createdAt: new Date().toISOString()
+    };
+
+    accounts.unshift(newAccount);
+    saveToLocalStorage();
+    renderAccountsTable();
+    closeManualModal();
+    showToast('Akun manual berhasil ditambahkan!');
+}
+
 // --- Workflow Drawer Handlers ---
 
 function openWorkflowDrawer(id) {
@@ -525,7 +588,6 @@ function openWorkflowDrawer(id) {
 
     currentEditingAccountId = id;
 
-    // Fallback generation for legacy data
     if (!acc.firstName || !acc.lastName) {
         const { firstName, lastName } = generateRandomName();
         acc.firstName = firstName;
@@ -541,24 +603,20 @@ function openWorkflowDrawer(id) {
         saveToLocalStorage();
     }
 
-    // Fill inputs
     drawerAccEmail.textContent = acc.email;
-    stepOutlookEmail.value = acc.email.split('@')[0]; // Username prefix
+    stepOutlookEmail.value = acc.email.split('@')[0];
     stepOutlookPass.value = acc.emailPassword;
     
-    // Set Name & DOB inputs
     stepOutlookFirstName.value = acc.firstName;
     stepOutlookLastName.value = acc.lastName;
     stepOutlookDob.value = acc.dob;
     
-    // Update Outlook SignUp Link
     const outlookBaseUrl = "https://signup.live.com/";
     const prefix = acc.email.split('@')[0];
     const pass = encodeURIComponent(acc.emailPassword);
     const first = encodeURIComponent(acc.firstName);
     const last = encodeURIComponent(acc.lastName);
     
-    // Parse DOB
     const dobParts = acc.dob.split(' ');
     const dobDay = dobParts[0] || '1';
     const dobMonthStr = dobParts[1] || 'Januari';
@@ -572,11 +630,9 @@ function openWorkflowDrawer(id) {
     
     btnOutlookSignup.href = `${outlookBaseUrl}#prefix=${prefix}&pass=${pass}&first=${first}&last=${last}&dobDay=${dobDay}&dobMonth=${dobMonth}&dobYear=${dobYear}`;
     
-    // Step 2 (Genshin) fields
     stepGenshinEmail.value = acc.email;
     stepGenshinPass.value = acc.gamePassword;
 
-    // Step 3 (Results) fields
     stepArInput.value = acc.ar || 5;
     stepPrimosInput.value = acc.primos || 0;
     stepCharacters.value = acc.characters || '';
@@ -665,7 +721,6 @@ function exportCSV() {
     }
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    // Header
     csvContent += "Email Outlook,Password Email,Password Game,Status,AR,Primogems,Karakter Bintang 5 / Catatan,Tanggal Dibuat\n";
     
     accounts.forEach(acc => {
@@ -709,7 +764,6 @@ function handleImportFile(e) {
                         return;
                     }
                     accounts = parsed.concat(accounts);
-                    // De-duplicate by email
                     const seen = new Set();
                     accounts = accounts.filter(acc => {
                         const duplicate = seen.has(acc.email);
@@ -743,7 +797,6 @@ function handleImportFile(e) {
                         const primos = parseInt(cleanVal(matches[5])) || 0;
                         const notes = cleanVal(matches[6]) || '';
                         
-                        // Check duplicate
                         if (!accounts.some(a => a.email === email)) {
                             accounts.push({
                                 id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
@@ -789,6 +842,13 @@ function setupEventListeners() {
             createAccountDraft();
         }
     });
+
+    // Manual Account Modal open/close listeners
+    if (btnOpenManualModal) btnOpenManualModal.addEventListener('click', openManualModal);
+    if (btnCloseManualModal) btnCloseManualModal.addEventListener('click', closeManualModal);
+    if (btnCancelManual) btnCancelManual.addEventListener('click', closeManualModal);
+    if (manualModalOverlay) manualModalOverlay.addEventListener('click', closeManualModal);
+    if (manualAccountForm) manualAccountForm.addEventListener('submit', handleManualFormSubmit);
 
     // Username range display update
     usernameLengthSlider.addEventListener('input', (e) => {
@@ -852,7 +912,7 @@ function setupEventListeners() {
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
 
     // Auto-close sidebar on mobile when action is taken
-    [btnGenerateOne, btnGenerateBulk, btnExportJson, btnExportCsv, btnTriggerImport].forEach(b => {
+    [btnGenerateOne, btnGenerateBulk, btnOpenManualModal, btnExportJson, btnExportCsv, btnTriggerImport].forEach(b => {
         if (b) b.addEventListener('click', () => {
             if (window.innerWidth <= 1024) closeSidebar();
         });
