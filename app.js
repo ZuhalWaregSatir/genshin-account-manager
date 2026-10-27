@@ -604,7 +604,7 @@ function openWorkflowDrawer(id) {
     }
 
     drawerAccEmail.textContent = acc.email;
-    stepOutlookEmail.value = acc.email.split('@')[0];
+    stepOutlookEmail.value = acc.email;
     stepOutlookPass.value = acc.emailPassword;
     
     stepOutlookFirstName.value = acc.firstName;
@@ -613,9 +613,7 @@ function openWorkflowDrawer(id) {
     
     const outlookBaseUrl = "https://signup.live.com/";
     const prefix = acc.email.split('@')[0];
-    const pass = encodeURIComponent(acc.emailPassword);
-    const first = encodeURIComponent(acc.firstName);
-    const last = encodeURIComponent(acc.lastName);
+    const domain = '@' + acc.email.split('@').slice(1).join('@');
     
     const dobParts = acc.dob.split(' ');
     const dobDay = dobParts[0] || '1';
@@ -626,9 +624,26 @@ function openWorkflowDrawer(id) {
         'Januari': '0', 'Februari': '1', 'Maret': '2', 'April': '3', 'Mei': '4', 'Juni': '5',
         'Juli': '6', 'Agustus': '7', 'September': '8', 'Oktober': '9', 'November': '10', 'Desember': '11'
     };
-    const dobMonth = monthsMap[dobMonthStr] || '0';
+    const monthNamesEn = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+    const dobMonth = parseInt(monthsMap[dobMonthStr] || '0', 10);
     
-    btnOutlookSignup.href = `${outlookBaseUrl}#prefix=${prefix}&pass=${pass}&first=${first}&last=${last}&dobDay=${dobDay}&dobMonth=${dobMonth}&dobYear=${dobYear}`;
+    // Kirim email lengkap + domain: form Microsoft terbaru meminta alamat email utuh,
+    // bukan cuma prefix. Userscript memakai data ini untuk mengisi field "Email".
+    const hashParams = new URLSearchParams({
+        email: acc.email,
+        prefix: prefix,
+        domain: domain,
+        pass: acc.emailPassword,
+        first: acc.firstName,
+        last: acc.lastName,
+        dobDay: String(dobDay),
+        dobMonth: String(dobMonth),
+        dobMonthName: monthNamesEn[dobMonth],
+        dobYear: String(dobYear)
+    });
+    
+    btnOutlookSignup.href = `${outlookBaseUrl}#${hashParams.toString()}`;
     
     stepGenshinEmail.value = acc.email;
     stepGenshinPass.value = acc.gamePassword;
